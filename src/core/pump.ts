@@ -1,7 +1,7 @@
 // The high-frequency heart of the page.
 //
 // In Safari, requestAnimationFrame and touch events are stuck at 60 Hz.
-// The original author works around it like this:
+// The workaround:
 //   1. A MessageChannel schedules a setTimeout for the next sample "slot".
 //      There are 2 slots per 120 Hz frame (every ~4.17 ms), phase-locked to the
 //      latest rAF timestamp, with a 1 ms lead.

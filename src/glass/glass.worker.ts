@@ -14,8 +14,8 @@ const scope = self as unknown as {
 
 // ---------------------------------------------------------------------------
 // Ring texture holding the page "re-render".
-// A page can't read its own pixels, so the original re-lays out the DOM as a
-// draw list and rasterizes it in the worker. Here: the main thread sends words
+// A page can't read its own pixels, so the DOM is re-laid out as a draw list
+// and rasterized in the worker: the main thread sends words
 // and rectangles with positions; the worker rasterizes only the band near the
 // viewport into a ring buffer (new rows come in as the scroll moves).
 
@@ -473,13 +473,13 @@ class Surface {
 const surfaces = new Map<string, Surface>()
 
 // ---------------------------------------------------------------------------
-// Live sources (the original's "refraction sources"): a canvas drawn here
-// (the tab bar) delivers its pixels to the page glass's backdrop. The original
-// does this between workers over a MessagePort; here both surfaces share the
-// same worker, so it is enough to capture and upload as a texture.
-// Only the region the page glass can sample is captured (like the original's
-// "demand"), and only right after drawing: with preserveDrawingBuffer=false
-// the buffer is no longer valid after the commit.
+// Live sources ("refraction sources"): a canvas drawn here (the tab bar)
+// delivers its pixels to the page glass's backdrop. Both surfaces share this
+// worker, so capturing and uploading a texture is enough; canvases in other
+// workers arrive over a MessagePort (PortSource, below).
+// Only the region the page glass can sample is captured (its "demand"), and
+// only right after drawing: with preserveDrawingBuffer=false the buffer is no
+// longer valid after the commit.
 
 interface Link {
   sink: string

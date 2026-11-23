@@ -1,4 +1,4 @@
-// Glass GLSL. An original implementation that follows the author's model:
+// Glass GLSL. The model:
 //  - shapes as SDFs (capsule / rounded rect) with a normal;
 //  - polynomial "smooth union" to fuse two shapes (button ↔ panel, bar ↔ search);
 //  - refraction: near the edge (bezel), the sample moves along the normal (inward);

@@ -1,7 +1,7 @@
 // Keeps ProMotion at 120 Hz while the user is touching the screen.
 //
 // iOS only raises the display to 120 Hz when something "needs" it: a scroll in
-// progress or a compositor animation. The original keeps:
+// progress or a compositor animation. So while a finger is down, keep:
 //   - a "pacer": an invisible 8 px scroller that smooth-scrolls 0 ↔ 200 px every
 //     250 ms (so a native scroll is always happening);
 //   - a "rate mark": a 1 px element with an infinite CSS translateX(1px) animation.

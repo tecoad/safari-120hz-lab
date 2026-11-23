@@ -6,7 +6,7 @@
 // are presented without waiting for the page's 60 Hz rendering update, so a
 // worker can draw at 120 Hz (undocumented WebKit behavior, see docs/FINDINGS.md).
 //
-// Flow control, as in the original: at most `maxInFlight` frames waiting for the
+// Flow control: at most `maxInFlight` frames waiting for the
 // worker's "presented" ack, and at least `minIntervalMs` between sends. Frames
 // that arrive while the pipe is full are coalesced: only the latest one is kept
 // and sent as soon as there is room ("latest state wins", nothing piles up).

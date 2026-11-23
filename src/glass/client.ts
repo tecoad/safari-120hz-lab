@@ -1,5 +1,5 @@
 // Main-thread side of the glass: transfers the canvas to the worker and sends frames.
-// Flow control like the original: at most 2 frames "in flight" and a minimum of
+// Flow control: at most 2 frames "in flight" and a minimum of
 // 6.25 ms between sends (avoids building a latency queue).
 
 import { isIOS } from '../core/env'
@@ -111,8 +111,8 @@ export class GlassSurface {
     this.post({ kind: 'labels', id: this.id, spec })
   }
 
-  /** Makes the frames of `source` appear behind this glass (like the original's
-   *  "refraction sources"). `rect` in document CSS px. */
+  /** Makes the frames of `source` appear behind this glass (a "refraction
+   *  source"). `rect` in document CSS px. */
   link(source: GlassSurface, rect: [number, number, number, number], radius: number) {
     if (source.failed) return
     this.post({ kind: 'link', id: this.id, source: source.id, rect, radius })

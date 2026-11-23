@@ -1,24 +1,27 @@
 # safari-120hz-lab
 
-A study of how to make web UI feel native at 120 Hz on iOS Safari, built by reverse engineering
-[“Bypassing iOS Safari’s 60 FPS Limit”](https://rida.dev/blog/bypassing-ios-safari-60-fps-limit) by Rida F’kih and
-React Aria’s [“Scrolling is All You Need”](https://react-aria.adobe.com/blog/sheet) sheet.
+A lab for making web UI feel native at 120 Hz on iOS Safari, which caps pages at 60. Each experiment isolates one idea,
+checks it, and turns what holds up into a React component: native scrolling as a 120 Hz input sensor, workers that
+present `OffscreenCanvas` frames off the main thread, liquid glass drawn by WebGL2 shaders, and sheets driven by scroll
+snapping.
+
+It builds on the 60 FPS workaround as written [here](https://rida.dev/blog/bypassing-ios-safari-60-fps-limit),
+including its tuned spring, size and material constants, and on React Aria’s
+[scroll-snap sheet](https://react-aria.adobe.com/blog/sheet).
 
 **Read [docs/FINDINGS.md](docs/FINDINGS.md)**: every technique, how it works, how it was validated, the code that
 implements it, and where it pays off in a product.
 
-## What’s inside
+## Experiments
 
-- **`/`: the glass demo.** The reading-progress indicator, the contents menu and the tab bar from the original article,
-  drawn by WebGL2 shaders in a worker, plus two controller meters that count scroll readings per second.
-- **`/components`: reusable React components.** A chart you scrub with native momentum, input meters, and a swipeable
-  sheet with an amount picker.
-- **[`src/react/`](src/react/index.ts): the components themselves.** `ScrollPad`, `useScrollSampler`,
-  `useWorkerCanvas` (+ `defineCanvasWorker`), `SwipeableSheet`, `InputMeter`, `useSpring`, `useDisplayBoost` and
-  `ScrollKeep`.
-
-The original author didn’t publish their source. This code is original, written from the article and from reading the
-site’s public bundles (spring, size and material constants come from there).
+- **`/`: liquid glass at 120 Hz.** A reading-progress lens, a contents menu that grows into a frosted panel, and a tab
+  bar, all drawn by WebGL2 shaders in a worker. The lens and the menu refract whatever passes under them, other
+  canvases included. Two controller meters count scroll readings per second, so the 120 Hz claims can be checked on a
+  phone.
+- **`/components`: from experiment to component.** A chart you scrub with native momentum, input meters, and a
+  swipeable sheet with an amount picker.
+- **[`src/react/`](src/react/index.ts): the components.** `ScrollPad`, `useScrollSampler`, `useWorkerCanvas`
+  (+ `defineCanvasWorker`), `SwipeableSheet`, `InputMeter`, `useSpring`, `useDisplayBoost` and `ScrollKeep`.
 
 ## Run
 
@@ -57,5 +60,5 @@ the production build; serve `dist/` with an SPA fallback so `/components` resolv
 - The page re-render covers text, backgrounds and borders. Images and CSS gradients are not included.
 - Outside Safari the loop uses plain rAF and the display boost stays off. Without WebGL2/OffscreenCanvas, the menu falls
   back to the DOM with `backdrop-filter`.
-- Tested in Chromium with a phone-sized viewport. The 120 Hz numbers come from the original author’s measurements and
+- Tested in Chromium with a phone-sized viewport. The 120 Hz figures are the ones reported in the write-up and
   still need to be checked on a real iPhone; the meters on both pages exist for exactly that.

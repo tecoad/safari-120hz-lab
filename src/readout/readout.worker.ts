@@ -3,7 +3,7 @@
 // as the glass: a DOM panel only updates at 60 Hz and could not honestly show
 // 120 changes per second.
 //
-// Metrics as in the original (controller-readout):
+// Metrics:
 //  - Updates: fresh readings per second (500 ms window);
 //  - Unique values: distinct positions per second in the same window;
 //  - Speed: velocity from the samples of the last 80 ms.

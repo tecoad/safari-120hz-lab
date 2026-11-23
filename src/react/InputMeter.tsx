@@ -1,6 +1,6 @@
 'use client'
 // <InputMeter>: proves, on the device, how many scroll readings per second you
-// actually get. React version of the controller meter from the original post.
+// actually get.
 //
 //  - Updates: fresh readings per second (500 ms window).
 //  - Unique values: distinct positions per second (reading faster than the
@@ -12,7 +12,7 @@
 // at 60 Hz and couldn't show 120 changes per second.
 //
 // Without `source`, it renders its own draggable grid (a native scroller) next
-// to the panel, like the original demo. With `source`, it measures any scroller
+// to the panel. With `source`, it measures any scroller
 // you pass (or 'window' for the page scroll).
 
 import { useEffect, useRef, type ReactNode, type RefObject } from 'react'

@@ -1,7 +1,7 @@
 'use client'
 // <ScrollKeep />: keeps iOS Safari reporting fresh scroll positions while the
 // URL bar collapses or expands (otherwise window.scrollY updates drop to ~10 Hz
-// during that animation, per the original author's measurements).
+// during that animation, as reported in the write-up linked from the README).
 //
 // How: a 1 px element runs a scroll-driven animation (animation-timeline:
 // scroll(root)) on outline-color, between two transparent colors. The property

@@ -1,10 +1,9 @@
 # Findings: native-feel web UI at 120 Hz
 
-What we learned by reverse engineering
-[“Bypassing iOS Safari’s 60 FPS Limit to Build Web Applications That Feel Native”](https://rida.dev/blog/bypassing-ios-safari-60-fps-limit)
-(Rida F’kih, November 2026) and React Aria’s
-[“Scrolling is All You Need: Building a Swipeable Sheet”](https://react-aria.adobe.com/blog/sheet), rebuilding the
-pieces in this repo, and turning the reusable ones into React components.
+Lab notes on making web UI feel native at 120 Hz on iOS Safari: each technique tried in this repo, how it was checked,
+and the React component it became. The core 60 FPS workaround builds on the approach as written
+[here](https://rida.dev/blog/bypassing-ios-safari-60-fps-limit) (cited below as “the write-up”), and the sheet follows
+React Aria’s [scroll-snap technique](https://react-aria.adobe.com/blog/sheet).
 
 This document is meant to be read by people and by coding agents. Every finding has the same shape:
 
@@ -21,8 +20,8 @@ This document is meant to be read by people and by coding agents. Every finding 
 
 | Tag | Meaning |
 |---|---|
-| **[Measured · author]** | Measured by the original author on an iPhone 18 Pro (filmed at 240 fps, played at 1/8 speed, or counted in their own readout). Not re-measured by us. |
-| **[Verified · here]** | Reproduced in this repo and checked in Chromium with a phone-sized viewport (rendering, logic, event flow). Not a device measurement. |
+| **[Measured · write-up]** | Measured on an iPhone 18 Pro and reported in the write-up (filmed at 240 fps and played at 1/8 speed, or counted with its readout). Not re-measured here yet. |
+| **[Verified · here]** | Built in this repo and checked in Chromium with a phone-sized viewport (rendering, logic, event flow). Not a device measurement. |
 | **[Spec]** | Backed by a specification or vendor documentation (linked). |
 | **[Undocumented]** | Works today because of an implementation detail in WebKit. Could change without notice. |
 | **[Needs device check]** | Plausible and implemented, but nobody has measured it on a real iPhone in this repo yet. The meters on the demo pages exist to close exactly this gap. |
@@ -104,8 +103,8 @@ bun dev
 
 **Problem.** On 120 Hz iPhones, Safari keeps websites at 60 Hz by default: `requestAnimationFrame` fires 60 times per
 second, touch and pointer events arrive at 60 Hz, and the DOM is painted 60 times per second. Drags feel heavier than in
-native apps. **[Measured · author]**
-([post](https://rida.dev/blog/bypassing-ios-safari-60-fps-limit#why-the-ios-safari-experience-sucks))
+native apps. **[Measured · write-up]**
+([source](https://rida.dev/blog/bypassing-ios-safari-60-fps-limit#why-the-ios-safari-experience-sucks))
 
 The cap is a WebKit preference, `PreferPageRenderingUpdatesNear60FPSEnabled`, shown in Safari as **“Prefer Page Rendering
 Updates near 60fps”** (Settings > Apps > Safari > Advanced > Feature Flags). **[Spec]**
@@ -153,7 +152,7 @@ banding and snapping in JavaScript is a lot of code, never quite matches the pla
   point. Momentum and the snap animation are native.
 - After the gesture, jump back to the middle of the scrollable range (“recenter”), so the next gesture has room in both
   directions. Because the next press re-reads the baseline, absolute scroll positions never matter.
-- The original tab bar uses one scroller per tab with 97 snap cells, `scroll-snap-stop: always`, 200 pt of slack at both
+- The tab bar on `/` uses one scroller per tab with 97 snap cells, `scroll-snap-stop: always`, 200 pt of slack at both
   ends, starting in the middle (48 tabs of travel each way). **[Verified · here]**
 - Mouse can’t drag a scroller, so pointer events (with pointer capture) stand in for it. Trackpad and wheel scrolling
   over the pad naturally become “momentum” moves.
@@ -162,9 +161,9 @@ banding and snapping in JavaScript is a lot of code, never quite matches the pla
 
 - iOS delivers scroll positions of a dragged scroller at up to 120 Hz once the display is boosted (F5), and a passive
   `touchmove` listener on the scroller also fires at 120 Hz when momentum/snapping aren’t needed.
-  **[Measured · author]** ([post](https://rida.dev/blog/bypassing-ios-safari-60-fps-limit#creating-the-controller))
+  **[Measured · write-up]** ([source](https://rida.dev/blog/bypassing-ios-safari-60-fps-limit#creating-the-controller))
 - Final benchmark: the controller-driven version averaged **118 fps over 3 s of dragging**; the pointer-events version
-  held **60**. **[Measured · author]** ([post](https://rida.dev/blog/bypassing-ios-safari-60-fps-limit#performance))
+  held **60**. **[Measured · write-up]** ([source](https://rida.dev/blog/bypassing-ios-safari-60-fps-limit#performance))
 - In this repo, the tab bar, both meters and the React chart scrubber are driven this way. The scrubber lands exactly on
   data points through scroll snapping after a fling. **[Verified · here]**
 
@@ -234,9 +233,9 @@ screen, one point is three physical pixels, so a slow scrub moves your crosshair
 still moves the content one screen pixel per pixel, but now one scroll unit is one physical pixel. Divide readings by
 the DPR.
 
-**Evidence.** Described by the author **[Measured · author]**
-([post](https://rida.dev/blog/bypassing-ios-safari-60-fps-limit#creating-the-controller)). In this repo the precise meter
-reports half-point steps in a 2× viewport **[Verified · here]**. The author also shows the alternative of making the
+**Evidence.** Described in the write-up **[Measured · write-up]**
+([source](https://rida.dev/blog/bypassing-ios-safari-60-fps-limit#creating-the-controller)). In this repo the precise meter
+reports half-point steps in a 2× viewport **[Verified · here]**. The write-up also shows the alternative of making the
 viewport itself the controller via `initial-scale=1/DPR`, which needs every unit scaled, text autosizing disabled and
 safe areas recomputed; not worth it outside experiments.
 
@@ -253,9 +252,9 @@ scrubs, fine price adjustment, zoomed-in chart panning.
 
 ## F3. A high-frequency sampling loop
 
-**Problem.** The `scroll` event is a poor sampler on iOS. During momentum it fired **5–26 times per second** on the
-author’s iPhone, and about 60 at best during slow scrolls. **[Measured · author]**
-([post](https://rida.dev/blog/bypassing-ios-safari-60-fps-limit#creating-the-controller))
+**Problem.** The `scroll` event is a poor sampler on iOS. During momentum it fired **5–26 times per second** on an
+iPhone 18 Pro, and about 60 at best during slow scrolls. **[Measured · write-up]**
+([source](https://rida.dev/blog/bypassing-ios-safari-60-fps-limit#creating-the-controller))
 
 **Mechanism.** Poll the scroll position yourself, on a loop that isn’t rAF:
 
@@ -274,7 +273,7 @@ author’s iPhone, and about 60 at best during slow scrolls. **[Measured · auth
   down.
 - Outside Safari, plain rAF already runs at the display rate.
 
-**Evidence.** The author compared sampling strategies on device **[Measured · author]**:
+**Evidence.** The write-up compares sampling strategies on device **[Measured · write-up]**:
 
 | Strategy | Distinct positions per second | Notes |
 |---|---|---|
@@ -320,12 +319,12 @@ useScrollSampler('window', ({ top }) => progressBar.style.transform = `scaleX(${
 **Problem.** Even with the loop from F3, readings capped at ~80 distinct values per second.
 
 **Mechanism.** Safari’s UI process sends the web process one scroll position at a time and waits for an acknowledgement
-before sending the next; positions that arrive in between overwrite each other. Reading WebKit’s source, the author found
+before sending the next; positions that arrive in between overwrite each other. Reading WebKit’s source, the write-up found
 that on any tick where the page has a rendering update queued, Safari flushes the position without waiting. An **empty
 `requestAnimationFrame` loop** (it draws nothing) keeps a rendering update queued.
 
-**Evidence.** About **12.5% more reads, to ~90 distinct positions per second**. **[Measured · author]**
-([post](https://rida.dev/blog/bypassing-ios-safari-60-fps-limit#creating-the-controller)) **[Undocumented]**
+**Evidence.** About **12.5% more reads, to ~90 distinct positions per second**. **[Measured · write-up]**
+([source](https://rida.dev/blog/bypassing-ios-safari-60-fps-limit#creating-the-controller)) **[Undocumented]**
 
 **Code.** [`onRaf` in pump.ts](../src/core/pump.ts#L61); it also stores the vsync timestamp the sampler phase-locks to.
 Built into `useScrollSampler`.
@@ -336,7 +335,7 @@ Built into `useScrollSampler`.
 
 ## F5. Keeping ProMotion at 120 Hz
 
-**Problem.** ProMotion only raises the refresh rate when something needs it. With input alone, the author saw the display
+**Problem.** ProMotion only raises the refresh rate when something needs it. With input alone, the write-up saw the display
 sit around 90 Hz.
 
 **Mechanism.** While a finger is on the screen, keep two things running:
@@ -347,13 +346,13 @@ sit around 90 Hz.
 
 Start on `touchstart` (Safari only), stop one second after the last touch ends.
 
-**Evidence.** With the boost, input reached 120 readings per second. **[Measured · author]**
-([post](https://rida.dev/blog/bypassing-ios-safari-60-fps-limit#creating-the-controller)) **[Undocumented]**
+**Evidence.** With the boost, input reached 120 readings per second. **[Measured · write-up]**
+([source](https://rida.dev/blog/bypassing-ios-safari-60-fps-limit#creating-the-controller)) **[Undocumented]**
 
 **Code.** [`installDisplayBoost`](../src/core/boost.ts#L17), styles `.display-pacer` / `.rate-mark` in
 [`style.css`](../src/style.css#L274). **React:** [`useDisplayBoost`](../src/react/useDisplayBoost.ts).
 
-**Gotchas.** Costs battery and heat; the author scoped it to interaction windows on purpose. Measure on device before
+**Gotchas.** Costs battery and heat, so scope it to interaction windows. Measure on device before
 shipping it anywhere. Never run it page-wide all the time.
 
 **Where I’d explore it.** Only during chart scrubbing and sheet drags, behind a flag, with battery and thermal checks on
@@ -365,14 +364,14 @@ older iPhones.
 
 **Problem.** When the page scroll changes direction, Safari collapses or expands the URL bar, and during that animation
 it throttles the scroll positions reported to the page (`window.scrollY`) to about 10 Hz. Anything driven by page scroll
-stutters right then. **[Measured · author]**
-([post](https://rida.dev/blog/bypassing-ios-safari-60-fps-limit#creating-the-controller))
+stutters right then. **[Measured · write-up]**
+([source](https://rida.dev/blog/bypassing-ios-safari-60-fps-limit#creating-the-controller))
 
 **Mechanism.** Give the page a scroll-driven CSS animation (`animation-timeline: scroll(root)`) on a property that the
 compositor can’t animate by itself, such as `outline-color`, animating between two transparent colors. The animation
 needs the scroll position on the main thread every frame, so WebKit keeps delivering it. Nothing is visible.
 
-**Evidence.** **[Measured · author]**, **[Undocumented]**, **[Needs device check]** in this repo.
+**Evidence.** **[Measured · write-up]**, **[Undocumented]**, **[Needs device check]** in this repo.
 
 **Code.** `.scroll-keep` in [`style.css`](../src/style.css#L252) and the element in
 [`GlassDemo.tsx`](../src/demos/glass/GlassDemo.tsx). Needs CSS scroll-driven animations (Safari 26+; see
@@ -398,7 +397,7 @@ updates present 60 times per second. On every browser, main-thread drawing compe
 and layout.
 
 **Mechanism.** `canvas.transferControlToOffscreen()` turns the `<canvas>` into a placeholder and gives you an
-`OffscreenCanvas` you can transfer to a worker. The worker draws with 2D or WebGL. The author found that WebKit presents
+`OffscreenCanvas` you can transfer to a worker. The worker draws with 2D or WebGL. As the write-up found, WebKit presents
 those frames without waiting for the page’s next rendering update. Result: **120 fps canvas rendering on iOS**.
 
 What the platform actually promises:
@@ -409,24 +408,24 @@ What the platform actually promises:
 - **Non-normative:** a note encourages implementations to short-circuit the window event loop’s graphics update for
   lower latency when a worker draws while the main thread is busy
   ([HTML § offscreen 2D context](https://html.spec.whatwg.org/multipage/canvas.html#the-offscreen-2d-rendering-context)).
-  This is the part the author relies on, and it is a recommendation, not a requirement.
+  This is the part the technique relies on, and it is a recommendation, not a requirement.
 - **WebKit:** no blog post or release note says frames bypass the 60 Hz cap. Commit messages describe updating the
   placeholder directly from the OffscreenCanvas’s thread and sending frames straight to the UI process
   ([bug 244878](https://bugs.webkit.org/show_bug.cgi?id=244878),
   [bug 249116](https://bugs.webkit.org/show_bug.cgi?id=249116),
   [bug 325214](https://bugs.webkit.org/show_bug.cgi?id=325214)). **[Undocumented]**
 
-Flow control (from the original): keep at most **2 frames in flight** (the worker acks each one) and at least **6.25 ms**
+Flow control: keep at most **2 frames in flight** (the worker acks each one) and at least **6.25 ms**
 between sends. Our hook adds coalescing: frames that arrive while the pipe is full are merged, so only the latest one is
 sent (“latest state wins”).
 
 **Evidence.**
 
-- 120 fps presentation from an OffscreenCanvas on iOS WebKit. **[Measured · author]**
-  ([post](https://rida.dev/blog/bypassing-ios-safari-60-fps-limit#breaking-the-60-fps-render-barrier))
-  **[Undocumented]**: the author warns Apple could make the placeholder wait for the main thread without violating
+- 120 fps presentation from an OffscreenCanvas on iOS WebKit. **[Measured · write-up]**
+  ([source](https://rida.dev/blog/bypassing-ios-safari-60-fps-limit#breaking-the-60-fps-render-barrier))
+  **[Undocumented]**: the write-up warns Apple could make the placeholder wait for the main thread without violating
   the spec.
-- Before finding it, the author tried and dropped: plain workers, pre-rendered “flip-book” permutations, and live-generated
+- Dead ends the write-up reports before this one: plain workers, pre-rendered “flip-book” permutations, and live-generated
   video (laggy, jagged, or out of memory).
 - In this repo, the glass, the tab bar, both meters and the React chart render from workers. **[Verified · here]**
 
@@ -463,7 +462,7 @@ and it resizes the canvas with a `ResizeObserver` (the worker helper redraws the
   a fixed 15 ms timer, roughly 66 Hz, regardless of the flag
   ([WorkerAnimationController.cpp](https://github.com/WebKit/WebKit/blob/main/Source/WebCore/workers/WorkerAnimationController.cpp);
   read from the code, not measured). Draw when a message arrives, as every worker in this repo does.
-- The original passes the WebGL context attribute `desynchronized: true` on iOS, but browser-compat-data lists it as
+- The glass worker passes the WebGL context attribute `desynchronized: true` on iOS, but browser-compat-data lists it as
   unsupported in Safari (Chrome 81+ only), so treat it as a no-op there.
 - Fonts in workers: system fonts work without loading; custom fonts must be loaded in the worker (or rasterized on the
   main thread).
@@ -489,7 +488,7 @@ signatures, loaders that must keep moving during heavy work.
 
 ## F8. Live sources: compositing one canvas into another
 
-**Problem.** A canvas can’t see another canvas’s pixels. In the original, the glass on the page refracts the demos
+**Problem.** A canvas can’t see another canvas’s pixels. On `/`, the glass on the page refracts the demos
 underneath it (the tab bar, the meters), so it needs their pixels.
 
 **Mechanism.** Right after a source draws, copy the region the consumer needs with
@@ -501,8 +500,7 @@ underneath it (the tab bar, the meters), so it needs their pixels.
   The main thread is never involved.
 - Capture only on demand and only the needed rectangle.
 
-**Evidence.** The original wires demos to the glass through MessagePorts between workers (their `refraction` messages and
-“demand” crops, read from the public bundles). In this repo, the reading indicator and menu refract the tab bar (same
+**Evidence.** In this repo, the reading indicator and menu refract the tab bar (same
 worker) and the meters (separate worker) when they pass over them. **[Verified · here]**
 
 **Code.** [`feed`](../src/glass/glass.worker.ts#L518), [`cropFor`](../src/glass/glass.worker.ts#L496),
@@ -528,8 +526,8 @@ position (from `Range.getClientRects()`), plus backgrounds and borders. Send the
 rasterizes only the band near the viewport into a **ring-buffer texture** and fills in new rows as the scroll moves.
 The shader samples that texture as “the page”.
 
-**Evidence.** The original does this (with a glyph atlas cached in IndexedDB). Ours rasterizes words with `fillText` in
-the worker. **[Verified · here]** for text, backgrounds and borders.
+**Evidence.** This repo rasterizes words with `fillText` in the worker; a glyph atlas cached in IndexedDB is the
+heavier-duty alternative. **[Verified · here]** for text, backgrounds and borders.
 
 **Code.** [`snapshotPage`](../src/glass/snapshot.ts#L25), the [`Ring`](../src/glass/glass.worker.ts#L28) class
 ([`ensure`](../src/glass/glass.worker.ts#L81), `drawRows` with `getImageData` → `texSubImage2D`).
@@ -557,8 +555,8 @@ A toolbox, independent of the 120 Hz story. All in [`shaders.ts`](../src/glass/s
 - **Chromatic aberration**: sample R and B with slightly smaller and larger offsets than G.
 - **Frost**: downsample the backdrop into a small texture (averaging in gamma space), then a separable Gaussian, then
   sample it ([`downsample`](../src/glass/shaders.ts#L233), [`BLUR_FS`](../src/glass/shaders.ts#L257)).
-- **Material** for the menu panel: blur + saturation + a translucent veil, with values the author measured against the
-  iOS 27 simulator (light: σ 12, saturation 1.2, 53.5% veil of rgb(253,253,253); dark: σ 8.4, saturation 1.3, 65.1% veil
+- **Material** for the menu panel: blur + saturation + a translucent veil, with values from the write-up’s demo, matched
+  against the iOS 27 simulator (light: σ 12, saturation 1.2, 53.5% veil of rgb(253,253,253); dark: σ 8.4, saturation 1.3, 65.1% veil
   of rgb(49,49,49)).
 - **Finish**: inner shade below the top edge, sheen, a bevel highlight from a vertical light, and a subtractive hairline
   just outside the edge ([`glassFinish`](../src/glass/shaders.ts#L111), [`glassHairline`](../src/glass/shaders.ts#L143)).
@@ -583,8 +581,8 @@ controls (two capsules fused while moving between options); probability bars wit
 **closed form** (exact for any frame time, under-, critically- and over-damped branches). Rest when
 |offset| < 1e‑4 and |velocity| < 1e‑3. An “overshoot clamping” variant stops at the first crossing.
 
-**Evidence.** Same parametrization as SwiftUI; constants measured by the author in the iOS 27 simulator (Safari’s filter
-menu and `glassEffect` subjects), read from the public bundles. **[Verified · here]** for the math.
+**Evidence.** Same parametrization as SwiftUI; constants from the write-up’s demo, matched in the iOS 27 simulator
+(Safari’s filter menu and `glassEffect` subjects). **[Verified · here]** for the math.
 
 **Code.** [`spring.ts`](../src/core/spring.ts#L14). **React:** [`useSpring`](../src/react/useSpring.ts) (imperative, runs on
 the shared pump, never re-renders).
@@ -596,7 +594,7 @@ const pop = useSpring(1, { dampingRatio: 0.55, response: 0.3 }, (s) => {
 pop.jump(1.12); pop.to(1)
 ```
 
-**Measured constants worth reusing** (from the original’s config; ζ = dampingRatio, r = response in seconds):
+**Measured constants worth reusing** (from the write-up’s demo; ζ = dampingRatio, r = response in seconds):
 
 | Motion | ζ | r | Notes |
 |---|---|---|---|
@@ -729,9 +727,9 @@ second.
 - **Speed**: from the samples of the last 80 ms.
 - A plane with the position and a 48-sample trail, and a 4 s chart with a 120/s guide.
 
-The author’s end-to-end check: film the phone at **240 fps**, play it at **1/8 speed**, and count frames of two oscillating
-squares (one driven by input, one by rendering). **[Measured · author]**
-([post](https://rida.dev/blog/bypassing-ios-safari-60-fps-limit#performance))
+End-to-end check from the write-up: film the phone at **240 fps**, play it at **1/8 speed**, and count frames of two oscillating
+squares (one driven by input, one by rendering). **[Measured · write-up]**
+([source](https://rida.dev/blog/bypassing-ios-safari-60-fps-limit#performance))
 
 **Code.** [`readout.worker.ts`](../src/readout/readout.worker.ts#L86) (`metrics`), [`readout.ts`](../src/readout/readout.ts).
 **React:** [`<InputMeter>`](../src/react/InputMeter.tsx) (built-in grid, or `source={ref}` / `'window'`).
@@ -841,7 +839,7 @@ Live usage of every export is in [`src/demos/components/ComponentsDemo.tsx`](../
 
 ## References
 
-- Rida F’kih, “Bypassing iOS Safari’s 60 FPS Limit to Build Web Applications That Feel Native”, November 2026:
+- The write-up this lab builds on:
   https://rida.dev/blog/bypassing-ios-safari-60-fps-limit
 - React Aria, “Scrolling is All You Need: Building a Swipeable Sheet” (Devon Govett):
   https://react-aria.adobe.com/blog/sheet

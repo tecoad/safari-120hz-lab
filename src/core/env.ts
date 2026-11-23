@@ -1,5 +1,5 @@
-// Environment detection. The original uses `'GestureEvent' in window` as the
-// "this is WebKit/Safari" signal: only Safari exposes GestureEvent.
+// Environment detection. `'GestureEvent' in window` is the "this is
+// WebKit/Safari" signal: only Safari exposes GestureEvent.
 export const isSafariEngine = typeof window !== 'undefined' && 'GestureEvent' in window
 
 export const isIOS =

@@ -1,11 +1,11 @@
 // Contents menu (table of contents) + reading-progress indicator, both glass.
 //
-// As in the original: the DOM is only the accessible layer (a real button, rows
+// The DOM is only the accessible layer (a real button, rows
 // with transparent text, focus, aria-*). Everything you see is drawn by the
 // shader in the worker, including the row text (label texture), at 120 Hz.
 //
-// Motion/size constants measured by the original author in the iOS 27 simulator
-// (Safari's filter menu); see post-contents-config in the original bundle.
+// Motion/size constants matched to Safari's filter menu in the iOS 27 simulator
+// (reference values from the write-up's demo, linked from the README).
 
 import { clamp, dpr, isDark, lerp, parseColor, prefersReducedMotion, smoothstep } from '../core/env'
 import { pump } from '../core/pump'
@@ -117,7 +117,7 @@ export interface ContentsOptions {
   surface: GlassSurface
   article: HTMLElement
   column: HTMLElement
-  originalUrl: string
+  writeUpUrl: string
   pinBoost: (on: boolean) => void
 }
 
@@ -152,7 +152,7 @@ export function mountContents(o: ContentsOptions) {
       rows.push({ el, kind, label, icon, href, rect: { x: 0, y: 0, w: 0, h: 0 } })
     }
     addAction('copy', 'Copy link', 'copy')
-    addAction('visit', 'Open the original article', 'external', o.originalUrl)
+    addAction('visit', 'Background reading', 'external', o.writeUpUrl)
     const sep = document.createElement('div')
     sep.className = 'post-contents-separator'
     sep.setAttribute('role', 'separator')

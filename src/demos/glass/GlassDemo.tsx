@@ -5,7 +5,7 @@
 import { useEffect, useRef, type CSSProperties } from 'react'
 import { bootGlassDemo } from './boot'
 
-const ORIGINAL = 'https://rida.dev/blog/bypassing-ios-safari-60-fps-limit'
+const WRITE_UP = 'https://rida.dev/blog/bypassing-ios-safari-60-fps-limit'
 
 function Meter({ kind, caption }: { kind: 'standard' | 'precise'; caption: string }) {
   const swatch = (c: string) => <span className="readout-swatch" style={{ '--c': c } as CSSProperties} />
@@ -71,16 +71,16 @@ export function GlassDemo() {
       <main data-glass-page className="mx-auto w-full max-w-[640px] px-5 pt-28 pb-48">
         <article className="prose-probe">
           <header>
-            <p className="mb-3 text-[13px] font-medium tracking-wide text-(--color-muted) uppercase">Reverse engineering · local study</p>
+            <p className="mb-3 text-[13px] font-medium tracking-wide text-(--color-muted) uppercase">safari-120hz-lab · Glass</p>
             <h1 id="top">Liquid Glass at 120 Hz in iOS Safari</h1>
             <p className="mt-1 text-[15px] text-(--color-muted)">
-              A reproduction of the elements from <a href={ORIGINAL}>“Bypassing iOS Safari’s 60 FPS Limit”</a> by Rida F’kih. The
-              reusable parts are packaged as React components on <a href="/components">/components</a>.
+              Can glass UI on a web page keep up with a 120 Hz display? An experiment with native scroll as input and shaders in
+              workers. The reusable parts are packaged as React components on <a href="/components">/components</a>.
             </p>
           </header>
 
           <p>
-            This prototype rebuilds three pieces of the original article: the <strong>reading-progress indicator</strong> in the top-left
+            The experiment puts three pieces of interface to the test: the <strong>reading-progress indicator</strong> in the top-left
             corner, the <strong>contents menu</strong> in the top-right corner, and the <strong>tab bar</strong> further down. All three are
             glass drawn by a WebGL2 shader running in a worker. Open it in Safari on an iPhone to see the difference.
           </p>
@@ -202,16 +202,15 @@ setTimeout(read, next - now)`}</code>
 
           <h2 id="limitations">Limitations</h2>
           <p>
-            All of this depends on undocumented WebKit behavior. The original author doesn’t recommend rebuilding a whole app on top of it and
-            would rather Apple supported ProMotion for websites natively. This is a study: the goal is to understand the pieces.
+            All of this depends on undocumented WebKit behavior, so it’s no foundation for a whole app, and native ProMotion support for
+            websites would make it unnecessary. This is a lab: the goal is to understand the pieces and keep the ones that hold up.
           </p>
           <p>
             Outside Safari, the loop uses a plain <code>requestAnimationFrame</code> and the display boost stays off. Without WebGL2 or{' '}
             <code>OffscreenCanvas</code>, the menu falls back to a DOM version with <code>backdrop-filter</code>.
           </p>
           <p className="text-[15px] text-(--color-muted)">
-            Technique and constants: Rida F’kih, <a href={ORIGINAL}>rida.dev</a>. The code in this reproduction is original, written from the
-            article and the site’s public bundles.
+            Builds on the 60 FPS workaround as written <a href={WRITE_UP}>here</a>, including its spring, size and material constants.
           </p>
         </article>
       </main>

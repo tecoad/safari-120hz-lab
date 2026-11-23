@@ -4,7 +4,7 @@
 // high-frequency loop. The pads are DPR× larger and scaled down with a
 // transform: 1 scroll px = 1 physical px.
 //
-// Constants: glass-nav-config from the original bundle (382 pt reference width).
+// Constants: reference values from the write-up's demo (382 pt reference width).
 
 import { clamp, dpr, isDark, lerp, parseColor, prefersReducedMotion, rubberBand, smoothstep } from '../core/env'
 import { pump } from '../core/pump'
@@ -709,7 +709,7 @@ export function mountDock(o: DockOptions) {
   return { relayout, size: () => ({ w: g.w, h: g.h }) }
 }
 
-/** cubic-bezier(0, 0, .58, 1) solved by bisection (24 steps), as in the original. */
+/** cubic-bezier(0, 0, .58, 1) solved by bisection (24 steps). */
 function cubicBezierEase(t: number) {
   const x1 = 0
   const x2 = 0.58

@@ -4,7 +4,7 @@
 //
 // Readings come from the same high-frequency loop as the rest of the page
 // (pump: vsync-aligned MessageChannel + empty rAF). Only readings that changed
-// become samples, as in the original. The panel is drawn in a worker.
+// become samples. The panel is drawn in a worker.
 //
 // `precise`: the scroller is created DPR× larger and scaled down with a
 // transform, so each scrollLeft/scrollTop unit is one physical pixel.

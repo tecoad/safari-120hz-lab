@@ -11,7 +11,7 @@ import { GlassSurface } from '../../glass/client'
 import { snapshotPage } from '../../glass/snapshot'
 import { mountReadout } from '../../readout/readout'
 
-const ORIGINAL = 'https://rida.dev/blog/bypassing-ios-safari-60-fps-limit'
+const WRITE_UP = 'https://rida.dev/blog/bypassing-ios-safari-60-fps-limit'
 
 let booted = false
 
@@ -48,7 +48,7 @@ function start(scope: HTMLElement) {
     surface: chrome,
     article,
     column: page,
-    originalUrl: ORIGINAL,
+    writeUpUrl: WRITE_UP,
     pinBoost: boost.pin,
   })
 
@@ -77,7 +77,7 @@ function start(scope: HTMLElement) {
   }
 
   /** The tab bar canvas becomes a "source" for the page glass: the indicator and
-   *  the menu refract the tab bar when they pass over it (as in the original). */
+   *  the menu refract the tab bar when they pass over it. */
   const linkDock = () => {
     if (!stage || !dockSurface) return
     const c = stage.querySelector('canvas')!.getBoundingClientRect()

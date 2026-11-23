@@ -1,6 +1,6 @@
 // Springs in Apple's format: (dampingRatio, response).
 // stiffness = (2π/response)², damping = 2·ζ·(2π/response), unit mass.
-// Closed-form integration (exact for any dt), same as the original.
+// Closed-form integration (exact for any dt).
 
 export interface SpringSpec {
   dampingRatio: number

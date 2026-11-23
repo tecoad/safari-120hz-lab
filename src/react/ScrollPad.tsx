@@ -13,7 +13,7 @@
 // - `snap`: snap points every `snap` CSS px along the axis (scroll-snap).
 // - `momentum`: keep reporting after the finger lifts (native fling + snap),
 //   then `onSettle`. Without it, momentum is cut at release (overflow: hidden
-//   for one frame), like the original tab bar.
+//   for one frame), like the glass tab bar on `/`.
 // - Mouse: a mouse can't drag a scroller, so pointer events stand in for it.
 // - Trackpad / wheel scrolling over the pad is reported as a "momentum" move.
 //

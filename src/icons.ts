@@ -1,4 +1,4 @@
-// Original icons (24×24 viewBox), drawn as strokes.
+// Icons drawn for this lab (24×24 viewBox), as strokes.
 // `fill` = filled version; `cut` = details cut out of the filled version.
 
 export interface Icon {
