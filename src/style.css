@@ -1,0 +1,487 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace;
+  --color-page: #f7f7f5;
+  --color-ink: #121212;
+  --color-muted: #6e6e73;
+  --color-line: rgb(0 0 0 / 0.12);
+  --color-code: rgb(0 0 0 / 0.06);
+  --color-accent: #0a66ff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-page: #000;
+    --color-ink: #f2f2f2;
+    --color-muted: #9a9aa0;
+    --color-line: rgb(255 255 255 / 0.14);
+    --color-code: rgb(255 255 255 / 0.1);
+    --color-accent: #6ea8ff;
+  }
+}
+
+:root {
+  color-scheme: light dark;
+  --stage-line-rgb: 0, 0, 0, 0.12;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --stage-line-rgb: 255, 255, 255, 0.16;
+  }
+}
+
+html {
+  background: var(--color-page);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--color-page);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+@layer components {
+  .prose-probe {
+    @apply text-[17px] leading-[1.62];
+  }
+  .prose-probe h1 {
+    @apply mb-2 text-[28px] leading-tight font-semibold tracking-tight;
+  }
+  .prose-probe h2 {
+    @apply mt-12 mb-3 scroll-mt-24 text-[21px] leading-snug font-semibold;
+  }
+  .prose-probe h3 {
+    @apply mt-8 mb-2 scroll-mt-24 text-[18px] leading-snug font-semibold;
+  }
+  .prose-probe p {
+    @apply my-4;
+  }
+  .prose-probe ul {
+    @apply my-4 list-disc pl-6;
+  }
+  .prose-probe li {
+    @apply my-1;
+  }
+  .prose-probe a {
+    @apply text-(--color-accent) underline underline-offset-2;
+  }
+  .prose-probe code {
+    @apply rounded-md bg-(--color-code) px-1.5 py-0.5 font-mono text-[0.86em];
+  }
+  .prose-probe pre {
+    @apply my-5 overflow-x-auto rounded-xl bg-(--color-code) p-4 text-[14px] leading-relaxed;
+  }
+  .prose-probe pre code {
+    @apply bg-transparent p-0;
+  }
+  .prose-probe blockquote {
+    @apply my-5 border-l-2 border-(--color-line) pl-4 text-(--color-muted);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Contents menu: invisible accessible layer (the canvas draws everything). */
+.post-contents {
+  position: fixed;
+  z-index: 20;
+  width: 56px;
+  height: 56px;
+  touch-action: manipulation;
+}
+
+.post-contents-button {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-ink);
+  cursor: pointer;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+.post-contents-button:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}
+
+.post-contents-button svg {
+  display: none;
+}
+
+.post-contents-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  overflow: hidden;
+  border-radius: 32px;
+  font: 400 17px/20.33px var(--font-sans);
+}
+
+.post-contents-panel[inert] {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.post-contents-scroller {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+
+.post-contents-scroller::-webkit-scrollbar {
+  display: none;
+}
+
+.post-contents-list {
+  box-sizing: border-box;
+  padding: 10px;
+}
+
+.post-contents-list ul,
+.post-contents-list ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.post-contents-row {
+  position: relative;
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 42px;
+  margin: 0;
+  padding: 10.835px 18px;
+  padding-inline-start: calc(18px + 16px * var(--level, 0));
+  overflow: hidden;
+  border: 0;
+  border-radius: 21px;
+  background: none;
+  color: transparent;
+  font: inherit;
+  text-align: start;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+.post-contents-row-with-icon {
+  padding-inline-start: 54px;
+}
+
+.post-contents-row:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: -2px;
+}
+
+.post-contents-separator {
+  height: 1px;
+  margin: 10px 14px;
+}
+
+.post-contents-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 19;
+}
+
+.glass-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 18;
+  display: block;
+  pointer-events: none;
+}
+
+/* No WebGL2/OffscreenCanvas: show the DOM with backdrop-filter instead. */
+.glass-off .glass-canvas {
+  display: none;
+}
+
+.glass-off .post-contents-button {
+  background: color-mix(in srgb, var(--color-page) 70%, transparent);
+  backdrop-filter: blur(12px) saturate(1.3);
+  -webkit-backdrop-filter: blur(12px) saturate(1.3);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.12);
+}
+
+.glass-off .post-contents-button svg {
+  display: block;
+  margin: auto;
+}
+
+.glass-off .post-contents-panel {
+  background: color-mix(in srgb, var(--color-page) 70%, transparent);
+  backdrop-filter: blur(16px) saturate(1.3);
+  -webkit-backdrop-filter: blur(16px) saturate(1.3);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.16);
+}
+
+.glass-off .post-contents-row {
+  color: inherit;
+}
+
+.glass-off .post-contents-row[data-highlight] {
+  background: color-mix(in srgb, var(--color-ink) 10%, transparent);
+}
+
+.glass-off .post-contents-separator {
+  background: var(--color-line);
+}
+
+/* Avoids Safari's 10 Hz scroll-position throttle while the URL bar resizes:
+   a scroll-driven animation on a property the GPU can't animate on its own
+   (outline-color between two transparent colors). */
+.scroll-keep {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+  contain: strict;
+  animation: keep-scroll-fresh linear both;
+  animation-timeline: scroll(root);
+}
+
+@keyframes keep-scroll-fresh {
+  from {
+    outline-color: #0000;
+  }
+  to {
+    outline-color: #0000;
+  }
+}
+
+/* ProMotion boost: "pacer" scroller + "rate mark". */
+.display-pacer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 8px;
+  height: 8px;
+  overflow: scroll;
+  pointer-events: none;
+  scrollbar-width: none;
+}
+
+.display-pacer::-webkit-scrollbar {
+  display: none;
+}
+
+.display-pacer > * {
+  visibility: hidden;
+}
+
+.rate-mark {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+  background: color-mix(in srgb, currentColor 1%, transparent);
+  animation: rate-mark 1s linear infinite;
+}
+
+@keyframes rate-mark {
+  to {
+    transform: translateX(1px);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Tab bar demo. */
+.dock-stage {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-page);
+  border: 1px solid var(--color-line);
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.dock-stage canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.dock-controllers {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+}
+
+.dock-controller {
+  position: absolute;
+  overflow: scroll;
+  overscroll-behavior: contain;
+  touch-action: pan-x pan-y;
+  scrollbar-width: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dock-controller::-webkit-scrollbar {
+  display: none;
+}
+
+/* --------------------------------------------------------------------------
+   Controller meter: panel (always dark) + draggable scroller. */
+.readout {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  overflow: hidden;
+  border: 1px solid var(--color-line);
+  border-radius: 16px;
+}
+
+.readout-panel {
+  display: grid;
+  align-content: start;
+  min-width: 0;
+  background: #0b0b0b;
+  color: #f5f5f3;
+}
+
+.readout-plane {
+  position: relative;
+  height: 132px;
+  overflow: hidden;
+  border-bottom: 1px solid rgb(245 245 243 / 0.2);
+}
+
+.readout-plane canvas,
+.readout-plot canvas,
+.readout-values {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.readout-legend {
+  position: relative;
+  display: grid;
+  margin: 0;
+  padding: 6px 8px;
+  border-bottom: 1px solid rgb(245 245 243 / 0.2);
+  font-size: 11px;
+  line-height: 1.45;
+  font-variant-numeric: tabular-nums;
+}
+
+.readout-legend > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.readout-legend dt {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+}
+
+.readout-legend dd {
+  margin: 0;
+}
+
+.readout-live .readout-legend dd {
+  color: transparent;
+}
+
+.readout-key {
+  display: inline-flex;
+  justify-content: center;
+  width: 12px;
+}
+
+.readout-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #409cff;
+}
+
+.readout-swatch {
+  width: 12px;
+  height: 2px;
+  background: var(--c);
+}
+
+.readout-plot {
+  position: relative;
+  height: 72px;
+  margin: 4px 0;
+  overflow: hidden;
+}
+
+.readout-box {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-page);
+  --grid: var(--color-line);
+}
+
+.readout-scroller {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: scroll;
+  overscroll-behavior: contain;
+  touch-action: pan-x pan-y;
+  scrollbar-width: none;
+  transform-origin: 0 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.readout-scroller::-webkit-scrollbar {
+  display: none;
+}
+
+.readout-sheet {
+  background-image:
+    linear-gradient(to right, var(--grid) var(--lw, 1px), transparent var(--lw, 1px)),
+    linear-gradient(to bottom, var(--grid) var(--lw, 1px), transparent var(--lw, 1px));
+  background-size: var(--cell, 16px) var(--cell, 16px);
+}
+
+.readout-tag {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: #e5352b;
+  color: #fff;
+  font-size: 11px;
+  pointer-events: none;
+}
