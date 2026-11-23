@@ -9,15 +9,16 @@ export const isIOS =
 
 export const isIOSSafari = isIOS && isSafariEngine
 
-const reducedMotionQuery = matchMedia('(prefers-reduced-motion: reduce)')
-const darkQuery = matchMedia('(prefers-color-scheme: dark)')
+// Lazy media queries: importing this module must not touch `window`, so the
+// React components stay safe to import during server-side rendering.
+const query = (q: string) => (typeof window !== 'undefined' && window.matchMedia ? window.matchMedia(q) : null)
 
-export const prefersReducedMotion = () => reducedMotionQuery.matches
-export const isDark = () => darkQuery.matches
+export const prefersReducedMotion = () => query('(prefers-reduced-motion: reduce)')?.matches ?? false
+export const isDark = () => query('(prefers-color-scheme: dark)')?.matches ?? false
 export const onThemeChange = (fn: (dark: boolean) => void) =>
-  darkQuery.addEventListener('change', (e) => fn(e.matches))
+  query('(prefers-color-scheme: dark)')?.addEventListener('change', (e) => fn(e.matches))
 
-export const dpr = () => Math.min(window.devicePixelRatio || 1, 3)
+export const dpr = () => (typeof window === 'undefined' ? 1 : Math.min(window.devicePixelRatio || 1, 3))
 
 export const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v))
 export const lerp = (a: number, b: number, t: number) => a + (b - a) * t

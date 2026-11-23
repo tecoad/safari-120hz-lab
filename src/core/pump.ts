@@ -35,16 +35,21 @@ class Pump {
   private raf = 0
   private target = 0
   private activeAt = 0
-  private channel = new MessageChannel()
+  private channel: MessageChannel | null = null
   /** Counters for the diagnostic HUD. */
   readonly stats = { ticks: 0, rafs: 0 }
 
-  constructor() {
-    this.channel.port1.onmessage = () => {
-      const now = performance.now()
-      this.target = this.slotAfter(Math.max(now, this.target + SLOT_MS / 2))
-      setTimeout(this.run, Math.max(0, this.target - now))
+  /** Created lazily so importing the module is safe during server-side rendering. */
+  private port() {
+    if (!this.channel) {
+      this.channel = new MessageChannel()
+      this.channel.port1.onmessage = () => {
+        const now = performance.now()
+        this.target = this.slotAfter(Math.max(now, this.target + SLOT_MS / 2))
+        setTimeout(this.run, Math.max(0, this.target - now))
+      }
     }
+    return this.channel.port2
   }
 
   private slotAfter(t: number) {
@@ -63,7 +68,9 @@ class Pump {
   add(client: PumpClient) {
     this.clients.add(client)
     this.wake()
-    return () => this.clients.delete(client)
+    return () => {
+      this.clients.delete(client)
+    }
   }
 
   wake = () => {
@@ -76,7 +83,7 @@ class Pump {
   }
 
   private schedule() {
-    if (isSafariEngine) this.channel.port2.postMessage(0)
+    if (isSafariEngine) this.port().postMessage(0)
     else requestAnimationFrame(this.run)
   }
 
